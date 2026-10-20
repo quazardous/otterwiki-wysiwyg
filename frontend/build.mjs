@@ -7,7 +7,7 @@ import { dirname, join } from 'node:path'
 const OUT = '../otterwiki_wysiwyg/static'
 
 const options = {
-  entryPoints: { wysiwyg: 'src/index.js', sections: 'src/sections.js' },
+  entryPoints: { wysiwyg: 'src/index.js', sections: 'src/sections.js', 'section-editor': 'src/section-entry.js' },
   bundle: true,
   format: 'iife',
   minify: true,
@@ -38,7 +38,7 @@ function writeLicenses(metafile) {
     parts.push(`${pkg.name}@${pkg.version} (${pkg.license || 'unknown'})\n\n${text}`)
   }
   writeFileSync(join(OUT, 'THIRD-PARTY-LICENSES.txt'),
-    `Packages bundled in wysiwyg.js and sections.js, with their licenses.\n\n${'='.repeat(78)}\n\n` +
+    `Packages bundled in wysiwyg.js, section-editor.js and sections.js, with their licenses.\n\n${'='.repeat(78)}\n\n` +
     parts.join(`\n\n${'='.repeat(78)}\n\n`) + '\n')
   console.log(`  ${OUT}/THIRD-PARTY-LICENSES.txt  ${dirs.size} packages`)
 }

@@ -7,9 +7,9 @@ writes the wiki's own Markdown dialect, and leaves every block you did not
 edit byte for byte as it was.
 
 The browser side is built from frontend/ into static/: the editor
-(wysiwyg.js, wysiwyg.css) injected into the page editor only, and, with the
-WYSIWYG_SECTION_EDIT option, the section links (sections.js, sections.css)
-injected into the pages being read.
+(wysiwyg.js, wysiwyg.css, and section-editor.js loaded on demand) injected
+into the page editor only, and, with the WYSIWYG_SECTION_EDIT option, the
+section links (sections.js, sections.css) injected into the pages being read.
 """
 
 import json
@@ -33,7 +33,8 @@ URL_PREFIX = "/-/wysiwyg"
 # Options, in the wiki's settings.cfg or as environment variables. The wiki
 # itself only reads its own keys from the environment, so both are read here.
 OPTIONS = {
-    # pencil links on the headings of a page, to edit one section at a time
+    # the Markdown of one section at a time (a Section sub-tab of the Markdown
+    # tab), and a pencil on the headings of a page to open it
     "WYSIWYG_SECTION_EDIT": False,
 }
 
@@ -129,8 +130,11 @@ class WysiwygPlugin:
         )
         if self.options["WYSIWYG_SECTION_EDIT"]:
             text += (
-                "\n\nThe pencil next to a heading of a page (shown when the "
-                "mouse is over it) edits that section only."
+                "\n\n**Section…**, next to the tabs, edits one section only "
+                "(both tabs); headings you add there are new sections, and "
+                "**Whole page** goes back to the whole page. The pencil next "
+                "to a heading of a page (shown when the mouse is over it) "
+                "opens its section."
             )
         return text
 

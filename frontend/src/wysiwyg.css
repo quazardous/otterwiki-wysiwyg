@@ -2,7 +2,8 @@
    classes (.page, .alert, .quote-alert, .collapse-panel), so content looks as
    it will once saved. */
 
-.ow-wysiwyg {
+.ow-wysiwyg,
+.ow-wysiwyg-toolbar {
   --ow-border: rgba(0, 0, 0, 0.12);
   --ow-muted: rgba(0, 0, 0, 0.55);
   --ow-raw-bg: rgba(0, 0, 0, 0.04);
@@ -13,7 +14,8 @@
   --ow-icon: rgba(0, 0, 0, 0.7);
 }
 
-.dark-mode .ow-wysiwyg {
+.dark-mode .ow-wysiwyg,
+.dark-mode .ow-wysiwyg-toolbar {
   --ow-border: rgba(255, 255, 255, 0.14);
   --ow-muted: rgba(255, 255, 255, 0.6);
   --ow-raw-bg: rgba(255, 255, 255, 0.06);
@@ -138,10 +140,6 @@
   border: 1px solid var(--ow-border);
   border-radius: 8px;
   background: var(--ow-toolbar-bg);
-}
-
-.ow-wysiwyg-toolbar {
-  border-radius: 8px 8px 0 0;
 }
 
 .ow-wysiwyg-surface {
@@ -286,6 +284,7 @@
 
 .ow-wysiwyg-tabs {
   display: flex;
+  align-items: flex-end;
   gap: 4px;
   margin-bottom: 6px;
   border-bottom: 1px solid rgba(128, 128, 128, 0.2);
@@ -404,4 +403,197 @@
 #editor_block.ow-wysiwyg-visual > .cm-editor,
 #editor_block.ow-wysiwyg-visual > .ow-wysiwyg-lint {
   display: none !important;
+}
+
+/* Whole page | Section…, at the right of the tabs (option WYSIWYG_SECTION_EDIT):
+   drawn like the tabs, a second, smaller pair of them */
+
+.ow-wysiwyg-scope {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.ow-wysiwyg-subtab,
+.ow-wysiwyg-scope-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  margin: 0 0 -1px;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: normal;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 6px 6px 0 0;
+  background: transparent;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+  transition: background-color 0.12s, opacity 0.12s;
+}
+
+.ow-wysiwyg-subtab:hover,
+.ow-wysiwyg-scope-pick:hover {
+  opacity: 0.9;
+  background: rgba(128, 128, 128, 0.08);
+}
+
+.ow-wysiwyg-subtab.active,
+.ow-wysiwyg-scope-pick.active {
+  opacity: 1;
+  font-weight: 500;
+  color: #1890ff;
+  border-bottom-color: #1890ff;
+}
+
+.dark-mode .ow-wysiwyg-subtab.active,
+.dark-mode .ow-wysiwyg-scope-pick.active {
+  color: #5ab0ff;
+  border-bottom-color: #5ab0ff;
+}
+
+/* the section list: a bare select inside the tab-like label */
+.ow-wysiwyg-scope-pick select {
+  max-width: 20em;
+  height: 28px;
+  padding: 0 2px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+.ow-wysiwyg-scope-pick select option {
+  color: initial;
+  font-weight: normal;
+}
+
+/* breadcrumb of the open section */
+.ow-wysiwyg-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 6px;
+  margin: 0 0 6px 4px;
+  font-size: 13px;
+}
+
+.ow-wysiwyg-crumb {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #1890ff;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+.dark-mode .ow-wysiwyg-crumb {
+  color: #5ab0ff;
+}
+
+.ow-wysiwyg-crumb:hover {
+  text-decoration: underline;
+}
+
+.ow-wysiwyg-crumb-sep {
+  opacity: 0.45;
+}
+
+.ow-wysiwyg-crumb-here {
+  font-weight: 500;
+}
+
+
+/* the section editor replaces the wiki's editor while a section is open */
+#editor_block.ow-wysiwyg-section-mode > .cm-editor {
+  display: none !important;
+}
+
+/* the section editor is styled in its shadow root (section-theme.js) */
+
+/* the wiki's own toolbar (navbar): replaced by this one. In CSS, loaded in the
+   page's head, so it never shows, not even until the script runs. */
+.navbar .btn-editor,
+.navbar .dropdown:has(> .btn-editor) {
+  display: none !important;
+}
+
+/* the shared toolbar, above both tabs' editors */
+.ow-wysiwyg-toolbar-shared {
+  margin-bottom: 6px;
+  border: 1px solid var(--ow-border, rgba(0, 0, 0, 0.12));
+  border-radius: 8px;
+}
+
+/* the table menu */
+.ow-wysiwyg-menu {
+  position: relative;
+  display: inline-flex;
+}
+
+.ow-wysiwyg-btn-menu {
+  width: auto;
+  padding: 0 6px;
+  gap: 3px;
+}
+
+.ow-wysiwyg-caret {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.ow-wysiwyg-menu-list {
+  display: none;
+  position: absolute;
+  top: 34px;
+  left: 0;
+  z-index: 20;
+  min-width: 13em;
+  padding: 4px 0;
+  border-radius: 8px;
+  background: var(--ow-toolbar-bg, #fff);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+}
+
+.ow-wysiwyg-menu-list.open {
+  display: block;
+}
+
+.ow-wysiwyg-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 14px;
+  font-size: 13px;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.ow-wysiwyg-menu-item i {
+  width: 1em;
+  opacity: 0.7;
+}
+
+.ow-wysiwyg-menu-item:hover:not(:disabled) {
+  background: var(--ow-hover, rgba(0, 0, 0, 0.06));
+}
+
+.ow-wysiwyg-menu-item:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.ow-wysiwyg-menu-sep {
+  height: 1px;
+  margin: 4px 0;
+  background: var(--ow-border, rgba(0, 0, 0, 0.12));
 }

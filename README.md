@@ -3,7 +3,9 @@
 A visual (WYSIWYG) editor for [An Otter Wiki](https://otterwiki.com), as a plugin.
 **Pages stay Markdown files** in the wiki's git repository.
 
-The page editor gets two tabs, **Visual** and **Markdown**. People who do not
+The page editor gets two tabs, **Visual** and **Markdown**, and one toolbar
+for both, in place of the wiki's own: in the Markdown tab its buttons write the
+Markdown (`**bold**`, `::: info`, `> [!NOTE]`, `[[link]]`...). People who do not
 want to learn Markdown edit the page as it will look; people who do keep the
 Markdown editor. Both edit the same page, and you can switch at any time.
 
@@ -26,8 +28,11 @@ Markdown editor. Both edit the same page, and you can switch at any time.
   without a body, an unknown alert type, an unclosed `[[`, a table row with the
   wrong number of columns, a block the visual editor could only keep as
   source. Click a problem to jump to its line; the tab shows how many there are.
-- **One section at a time** (option): a pencil on each heading of a page opens
-  the editor on that section only; the rest of the page is kept as is.
+- **One section at a time** (option): *Whole page* / *Section…* next to the
+  tabs, and a breadcrumb of the open section. Both tabs edit that section only
+  (the Markdown one in an editor of its own); the rest of the page is kept as
+  is, and headings added there are new sections. A pencil on each heading of a
+  page opens its section in the visual tab.
 - Paste or drop an image: it is uploaded as an attachment of the page.
 
 Built on [Tiptap](https://tiptap.dev) 3 and its Markdown extension.
@@ -72,7 +77,7 @@ In the wiki's `settings.cfg`, or as environment variables of its container:
 
 | Option | Default | |
 |---|---|---|
-| `WYSIWYG_SECTION_EDIT` | `false` | a pencil on each heading of a page (on hover) opens the editor on that section only: the heading and everything up to the next heading of the same level or higher. The Markdown tab still shows the whole page. |
+| `WYSIWYG_SECTION_EDIT` | `false` | *Whole page* and *Section…* (a list of the page's headings) next to the tabs: both tabs edit one section only, from its heading to the next heading of the same level or higher, with a breadcrumb (page › parent headings › section). Every change is written back into the whole page, so drafts, preview and save are unchanged; headings added there are new sections. A pencil on each heading of a page (on hover) opens its section in the visual tab. |
 
 ## How it works
 
@@ -92,6 +97,9 @@ In the wiki's `settings.cfg`, or as environment variables of its container:
   check panel, section editing). Every change in the visual editor is written to
   the wiki's CodeMirror editor.
 - `frontend/src/lint.js`: the Markdown check.
+- `frontend/src/section.js`: the section editor (CodeMirror 6, with a light
+  Markdown mode, `markdown-mode.js`), in `section-editor.js`, loaded the first
+  time a section is opened.
 - `frontend/src/sections.js`: the section links of a page being read (a small
   script of its own: the editor is only loaded by the editor page).
 

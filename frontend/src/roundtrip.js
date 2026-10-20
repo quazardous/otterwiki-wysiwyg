@@ -139,33 +139,20 @@ export class RoundTrip {
   }
 
   /**
-   * Section `index` of the loaded page (0 = its first top-level heading): the
-   * heading and every block up to the next heading of the same level or higher.
-   * Returns { from, to, title, level } in block indices, or null.
+   * The sections of the loaded page, in its Markdown source: one per top-level
+   * heading, from the heading to the next heading of the same level or higher.
+   * Offsets are in the source; `end` is the start of the next such heading (the
+   * blank lines before it belong to the section), or the end of the page.
+   * @returns {{ index, title, level, start, end }[]}
    */
-  section(index) {
-    const headings = []
-    this.blocks.forEach((b, i) => {
-      if (b.nodes.length === 1 && b.nodes[0].type === 'heading') headings.push(i)
+  sections() {
+    const headings = this.blocks.filter((b) => b.nodes.length === 1 && b.nodes[0].type === 'heading')
+    return headings.map((b, index) => {
+      const level = b.nodes[0].attrs.level
+      const next = headings.slice(index + 1).find((h) => h.nodes[0].attrs.level <= level)
+      const title = (b.nodes[0].content || []).map((n) => n.text || n.attrs?.inner || '').join('').trim()
+      return { index, title, level, start: b.start, end: next ? next.start : this.source.length }
     })
-    if (!Number.isInteger(index) || index < 0 || index >= headings.length) return null
-    const from = headings[index]
-    const level = this.blocks[from].nodes[0].attrs.level
-    const next = headings.find((i) => i > from && this.blocks[i].nodes[0].attrs.level <= level)
-    const title = (this.blocks[from].nodes[0].content || []).map((n) => n.text || '').join('')
-    return { from, to: next === undefined ? this.blocks.length : next, title, level }
-  }
-
-  /**
-   * The whole page, with the blocks of a section replaced by `nodes`.
-   */
-  serializeSection(range, nodes) {
-    const around = (a, b) => this.blocks.slice(a, b).flatMap((blk) => blk.nodes)
-    return this.serialize({ type: 'doc', content: [...around(0, range.from), ...nodes, ...around(range.to)] })
-  }
-
-  sectionNodes(range) {
-    return this.blocks.slice(range.from, range.to).flatMap((b) => b.nodes)
   }
 
   // the unused block whose nodes start at nodes[i], preferring the expected one

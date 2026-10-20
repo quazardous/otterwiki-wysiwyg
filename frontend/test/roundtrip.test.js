@@ -124,25 +124,33 @@ test('a soft line break is written back as a plain newline, a hard one as two sp
   assert.equal(rt.serialize(doc), 'Line one\nline two  \nline three Edited.\n')
 })
 
-test('a section runs from its heading to the next heading of the same level or higher', () => {
+test('sections run from a heading to the next heading of the same level or higher', () => {
   const md = '# Page\n\nIntro.\n\n## One\n\nText one.\n\n### Sub\n\nSub text.\n\n## Two\n\nText two.\n'
   const rt = roundtrip()
   rt.load(md)
-  assert.deepEqual(rt.section(1), { from: 2, to: 6, title: 'One', level: 2 })
-  assert.deepEqual(rt.section(2), { from: 4, to: 6, title: 'Sub', level: 3 })
-  assert.deepEqual(rt.section(3), { from: 6, to: 8, title: 'Two', level: 2 })
-  assert.equal(rt.section(4), null)
-  assert.equal(rt.section(-1), null)
+  const s = rt.sections()
+  assert.deepEqual(s.map((x) => [x.title, x.level]), [['Page', 1], ['One', 2], ['Sub', 3], ['Two', 2]])
+  assert.equal(md.slice(s[1].start, s[1].end), '## One\n\nText one.\n\n### Sub\n\nSub text.\n\n')
+  assert.equal(md.slice(s[2].start, s[2].end), '### Sub\n\nSub text.\n\n')
+  assert.equal(md.slice(s[3].start, s[3].end), '## Two\n\nText two.\n')
+  assert.equal(s[0].end, md.length)
 })
 
-test('editing a section rewrites that section only, in place', () => {
+test('headings inside blocks, code and front matter are not sections', () => {
+  const md = '---\ntitle: T\n---\n# A\n\n::: info\n# In a block\n:::\n\n```\n# in code\n```\n\n>| # Fold\n>| text\n\n## B\n'
+  const rt = roundtrip()
+  rt.load(md)
+  assert.deepEqual(rt.sections().map((x) => x.title), ['A', 'B'])
+})
+
+test('replacing a section source keeps the rest of the page byte for byte', () => {
   const md = '# Page\n\n* intro\n\n## One\n\nText one.\n\n## Two\n\n+ two\n'
   const rt = roundtrip()
   rt.load(md)
-  const range = rt.section(1)
-  const nodes = clone(rt.sectionNodes(range))
-  nodes[1].content[0].text = 'Edited one.'
-  assert.equal(rt.serializeSection(range, nodes), '# Page\n\n* intro\n\n## One\n\nEdited one.\n\n## Two\n\n+ two\n')
-  // unchanged: the very same bytes
-  assert.equal(rt.serializeSection(range, rt.sectionNodes(range)), md)
+  const one = rt.sections()[1]
+  const edited = '## One\n\nEdited.\n\n## Added section\n\nNew.\n\n'
+  const out = md.slice(0, one.start) + edited + md.slice(one.end)
+  assert.equal(out, '# Page\n\n* intro\n\n## One\n\nEdited.\n\n## Added section\n\nNew.\n\n## Two\n\n+ two\n')
+  rt.load(out)
+  assert.deepEqual(rt.sections().map((x) => x.title), ['Page', 'One', 'Added section', 'Two'])
 })

@@ -33,7 +33,7 @@ async function openEditor(path, mode = 'visual', query = '') {
   page.on('response', (r) => r.status() >= 400 && !/\/a\//.test(r.url()) && errors.push(`${r.status()} ${r.url()}`))
   page.on('console', (m) => m.type() === 'error' && !m.text().startsWith('Failed to load resource') && errors.push(m.text()))
   await page.goto(`${WIKI}/${path}?edit${query}`)
-  await page.waitForSelector(mode === 'visual' ? '.ow-wysiwyg-content' : '#wysiwyg_tab_source.active')
+  await page.waitForSelector(query ? '.ow-wysiwyg-tabs' : mode === 'visual' ? '.ow-wysiwyg-content' : '#wysiwyg_tab_source.active')
 }
 
 const cmText = () => page.evaluate(() => window.cm_editor.state.doc.toString())
@@ -119,7 +119,7 @@ test('the Markdown tab checks the source and jumps to a problem', async () => {
 })
 
 // needs WYSIWYG_SECTION_EDIT=true (docker-compose.yml)
-test('section edit: a pencil per top-level heading, the editor on that section only', async () => {
+test('section edit: a pencil per top-level heading opens its section, visual first, Markdown too', async () => {
   page = await browser.newPage()
   await page.goto(`${WIKI}/E2e-demo`)
   const links = await page.$$eval('.ow-wysiwyg-section-edit', (as) => as.map((a) => a.getAttribute('href')))
@@ -127,18 +127,49 @@ test('section edit: a pencil per top-level heading, the editor on that section o
   assert.equal(links.length, 7)
   assert.match(links[2], /\?edit&section=2$/)
 
-  await openEditor('E2e-demo', 'visual', '&section=2')
-  await page.waitForSelector('.ow-wysiwyg-section')
-  const headings = await page.$$eval('.ow-wysiwyg-content > h1, .ow-wysiwyg-content > h2', (hs) => hs.map((h) => h.textContent))
-  assert.deepEqual(headings, ['Quotes and blocks'])
+  // the pencil opens the section in the visual tab (even if Markdown was the last tab)
+  await openEditor('E2e-demo', 'source', '&section=2')
+  await page.waitForSelector('.ow-wysiwyg-content')
+  assert.equal(await page.textContent('.ow-wysiwyg-crumb-here'), 'Quotes and blocks')
+  assert.deepEqual(await page.$$eval('.ow-wysiwyg-content > h2', (hs) => hs.map((h) => h.textContent)), ['Quotes and blocks'])
+  // the Markdown tab: the same section, in its own editor
+  await page.click('#wysiwyg_tab_source')
+  await page.waitForSelector('.ow-wysiwyg-section-editor .cm-editor')
+  assert.equal(await page.evaluate(() => window.cm_editor.dom.offsetHeight), 0, 'the whole page editor is hidden')
+  // the section editor is in a shadow root: Playwright locators pierce it
+  const sectionText = () => page.locator('.ow-wysiwyg-section-editor .cm-content').innerText()
+  const text = await sectionText()
+  assert.match(text, /^## Quotes and blocks/)
+  assert.doesNotMatch(text, /## Tables/)
+
+  // typing, and adding a section, changes the page in place
   const before = await cmText()
-  await page.click('.ow-wysiwyg-content blockquote p')
+  await page.click('.ow-wysiwyg-section-editor .cm-content')
+  await page.keyboard.press('Control+Home')
   await page.keyboard.press('End')
-  await page.keyboard.type(' In a section.')
+  await page.keyboard.type(' (edited)')
+  await page.keyboard.press('Control+End')
+  await page.keyboard.type('## Added section\n\nNew text.\n\n')
   const after = await cmText()
-  const changed = after.split('\n').filter((l, i) => l !== before.split('\n')[i])
-  assert.equal(changed.length, 1)
-  assert.match(changed[0], /In a section\.$/)
+  assert.ok(after.startsWith(before.slice(0, before.indexOf('## Quotes and blocks'))), 'the page before the section is untouched')
+  assert.ok(after.endsWith(before.slice(before.indexOf('## Tables'))), 'the page after the section is untouched')
+  assert.match(after, /## Quotes and blocks \(edited\)\n/)
+  assert.match(after, /## Added section\n\nNew text\.\n\n## Tables/)
+
+  // the new section is in the list (refreshed with the check); the visual tab
+  // keeps the section; back to the whole page
+  await page.waitForFunction(() => [...document.querySelectorAll('#wysiwyg_subtab_section option')].some((o) => o.textContent.trim() === 'Added section'))
+  await page.click('#wysiwyg_tab_visual')
+  await page.waitForSelector('.ow-wysiwyg-crumb-here')
+  assert.equal(await page.textContent('.ow-wysiwyg-crumb-here'), 'Quotes and blocks (edited)')
+  const visualHeadings = await page.$$eval('.ow-wysiwyg-content > h2', (hs) => hs.map((h) => h.textContent))
+  // "## Added section" is a heading of the same level: a new section of its own
+  assert.deepEqual(visualHeadings, ['Quotes and blocks (edited)'])
+  await page.click('#wysiwyg_tab_source')
+  await page.waitForSelector('.ow-wysiwyg-section-editor .cm-content')
+  await page.click('#wysiwyg_subtab_page')
+  assert.ok((await page.evaluate(() => window.cm_editor.dom.offsetHeight)) > 100)
+  assert.equal(await cmText(), after)
 })
 
 test('layout: one editor at a time, the visual one in view, readable sizes', async () => {
@@ -158,6 +189,30 @@ test('layout: one editor at a time, the visual one in view, readable sizes', asy
   }))
   assert.ok(source.cm > 100, 'the source editor is shown in the Markdown tab')
   assert.equal(source.visual, 0)
+})
+
+test('one toolbar, above the editing area, in both tabs; the wiki\'s own is hidden', async () => {
+  await openEditor('E2e-demo', 'source')
+  assert.equal(await page.$$eval('.navbar .btn-editor', (bs) => bs.filter((b) => b.offsetParent).length), 0)
+  const place = () => page.evaluate(() => {
+    const bar = document.querySelector('.ow-wysiwyg-toolbar-shared')
+    return bar ? Math.round(bar.getBoundingClientRect().top) : null
+  })
+  const mdTop = await place()
+  assert.ok(mdTop !== null, 'toolbar after the tabs')
+  // Markdown: bold wraps the selection, undo restores it
+  await page.evaluate(() => {
+    const cm = window.cm_editor
+    const l = cm.state.doc.line(3)
+    cm.dispatch({ selection: { anchor: l.from, head: l.from + 4 } })
+  })
+  await page.click('.ow-wysiwyg-toolbar button[title="Bold"]')
+  assert.match(await page.evaluate(() => window.cm_editor.state.doc.line(3).text), /^\*\*Text\*\*/)
+  await page.click('.ow-wysiwyg-toolbar button[title="Undo"]')
+  assert.match(await page.evaluate(() => window.cm_editor.state.doc.line(3).text), /^Text with/)
+  await page.click('#wysiwyg_tab_visual')
+  await page.waitForSelector('.ow-wysiwyg-content')
+  assert.equal(await place(), mdTop, 'same place in both tabs')
 })
 
 test('no JavaScript error', () => {

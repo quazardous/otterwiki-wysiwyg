@@ -9,6 +9,8 @@ Markdown (`**bold**`, `::: info`, `> [!NOTE]`, `[[link]]`...). People who do not
 want to learn Markdown edit the page as it will look; people who do keep the
 Markdown editor. Both edit the same page, and you can switch at any time.
 
+![The visual editor, with its toolbar](docs/visual.png)
+
 - **Lossless.** Blocks you do not edit are saved byte for byte as they were:
   opening a page in the visual editor and saving it changes nothing, and an
   edit shows in the git history as a change of that block only.
@@ -36,6 +38,10 @@ Markdown editor. Both edit the same page, and you can switch at any time.
 - Paste or drop an image: it is uploaded as an attachment of the page.
 
 Built on [Tiptap](https://tiptap.dev) 3 and its Markdown extension.
+
+| The Markdown tab: same toolbar, Markdown check | One section at a time, with its breadcrumb |
+|---|---|
+| ![The Markdown tab](docs/markdown.png) | ![Editing one section](docs/section.png) |
 
 ## Install
 
@@ -68,8 +74,14 @@ Tested with An Otter Wiki 2.26.0.
 ## Use
 
 Open a page, *Edit*: the editor opens on the **Visual** tab. The **Markdown**
-tab is the wiki's own editor, with the Markdown check under it. Your browser
+tab is the wiki's own editor, with the Markdown check above it. Your browser
 remembers the tab you used last.
+
+The toolbar is the same in both tabs, above the editing area. In the visual tab
+it formats the page; in the Markdown tab the same buttons write the Markdown
+(`**bold**`, `## heading`, `- list`, `::: info`, `> [!NOTE]`, `>|` folded block,
+`[[link]]`, a table...), and the wiki's search, replace and table tools are
+there too.
 
 ## Options
 
@@ -93,13 +105,18 @@ In the wiki's `settings.cfg`, or as environment variables of its container:
   written as that block's original text; only edited or new blocks go through
   the serializer. A block whose serialization would not read back the same is
   loaded as a source box.
-- `frontend/src/index.js`: the integration with the editor page (tabs, Markdown
-  check panel, section editing). Every change in the visual editor is written to
-  the wiki's CodeMirror editor.
+- `frontend/src/index.js`: the integration with the editor page (tabs, toolbar,
+  Markdown check panel, sections). Every change in the visual editor is written
+  to the wiki's CodeMirror editor.
+- `frontend/src/toolbar.js`: the toolbar of both tabs, in place of the wiki's
+  (hidden in CSS); `frontend/src/md-actions.js`: what its buttons write in the
+  Markdown tab.
 - `frontend/src/lint.js`: the Markdown check.
-- `frontend/src/section.js`: the section editor (CodeMirror 6, with a light
-  Markdown mode, `markdown-mode.js`), in `section-editor.js`, loaded the first
-  time a section is opened.
+- `frontend/src/section.js`: the Markdown editor of a section (CodeMirror 6,
+  with a light Markdown mode, `markdown-mode.js`, and the wiki's colours,
+  `section-theme.js`), in `section-editor.js`, loaded the first time a section
+  is opened. It lives in a shadow root: two CodeMirror bundles on one page
+  would replace each other's styles.
 - `frontend/src/sections.js`: the section links of a page being read (a small
   script of its own: the editor is only loaded by the editor page).
 
@@ -111,15 +128,16 @@ Requirements: Docker, Node.js 20+.
 make install   # frontend dependencies
 make test      # round-trip tests
 make e2e       # end-to-end tests in Chrome, against the local wiki
+make screenshots  # the README screenshots (docs/)
 make up        # build the bundle, start a wiki on http://localhost:8080 (no login)
 make seed      # add demo pages with every syntax
 make watch     # rebuild the bundle on change, then reload the page
 make restart   # after a change of the Python side
+make help      # everything else
+```
 
 The local wiki runs the plugin from this checkout (`PYTHONPATH` in
 `docker-compose.yml`), with `WYSIWYG_SECTION_EDIT` on.
-make help      # everything else
-```
 
 ## Known limits
 
@@ -135,6 +153,7 @@ make help      # everything else
 
 [MIT](LICENSE). Not affiliated with An Otter Wiki.
 
-The bundle includes [Tiptap](https://tiptap.dev), [ProseMirror](https://prosemirror.net)
-and [marked](https://marked.js.org), all MIT: their licenses are in
+The bundles include [Tiptap](https://tiptap.dev), [ProseMirror](https://prosemirror.net),
+[marked](https://marked.js.org) and [CodeMirror](https://codemirror.net), all MIT:
+their licenses are in
 [`otterwiki_wysiwyg/static/THIRD-PARTY-LICENSES.txt`](otterwiki_wysiwyg/static/THIRD-PARTY-LICENSES.txt).

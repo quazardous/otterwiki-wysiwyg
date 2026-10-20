@@ -1,0 +1,318 @@
+/* otterwiki-wysiwyg: the visual editor. The page itself uses the wiki's own
+   classes (.page, .alert, .quote-alert, .collapse-panel), so content looks as
+   it will once saved. */
+
+.ow-wysiwyg {
+  --ow-border: rgba(0, 0, 0, 0.15);
+  --ow-muted: rgba(0, 0, 0, 0.55);
+  --ow-raw-bg: rgba(0, 0, 0, 0.04);
+  --ow-toolbar-bg: #fff;
+  --ow-active: rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode .ow-wysiwyg {
+  --ow-border: rgba(255, 255, 255, 0.2);
+  --ow-muted: rgba(255, 255, 255, 0.6);
+  --ow-raw-bg: rgba(255, 255, 255, 0.06);
+  --ow-toolbar-bg: #25282c;
+  --ow-active: rgba(255, 255, 255, 0.15);
+}
+
+.ow-wysiwyg-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  background: var(--ow-toolbar-bg);
+  border: 1px solid var(--ow-border);
+  border-radius: 4px 4px 0 0;
+}
+
+.ow-wysiwyg-btn {
+  min-width: 2em;
+}
+
+.ow-wysiwyg-btn.active {
+  background: var(--ow-active);
+}
+
+.ow-wysiwyg-sep {
+  width: 1px;
+  height: 1.4em;
+  margin: 0 4px;
+  background: var(--ow-border);
+}
+
+.ow-wysiwyg-select {
+  height: 1.9em;
+  padding: 0 4px;
+  font-size: 0.85em;
+  border: 1px solid var(--ow-border);
+  border-radius: 3px;
+  background: transparent;
+  color: inherit;
+}
+
+.ow-wysiwyg-note {
+  padding: 4px 10px;
+  font-size: 0.85em;
+  color: var(--ow-muted);
+  border: 1px solid var(--ow-border);
+  border-top: 0;
+}
+
+.ow-wysiwyg-surface {
+  min-height: 60vh;
+  padding: 1em 1.5em;
+  border: 1px solid var(--ow-border);
+  border-top: 0;
+  border-radius: 0 0 4px 4px;
+}
+
+.ow-wysiwyg-content {
+  outline: none;
+  min-height: 55vh;
+}
+
+.ow-wysiwyg-content table {
+  border-collapse: collapse;
+}
+
+.ow-wysiwyg-content td,
+.ow-wysiwyg-content th {
+  border: 1px solid var(--ow-border);
+  padding: 4px 8px;
+  min-width: 3em;
+  vertical-align: top;
+}
+
+.ow-wysiwyg-content .selectedCell {
+  background: var(--ow-active);
+}
+
+.ow-wysiwyg-content ul[data-type='taskList'] {
+  list-style: none;
+  padding-left: 0.5em;
+}
+
+.ow-wysiwyg-content ul[data-type='taskList'] li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5em;
+}
+
+/* the editor wraps every list item in a paragraph: tight lists, like the wiki */
+.ow-wysiwyg-content li > p,
+.ow-wysiwyg-content li > div > p {
+  margin: 0;
+}
+
+.ow-wysiwyg-content img {
+  max-width: 100%;
+}
+
+.ow-wysiwyg-content img.ProseMirror-selectednode {
+  outline: 2px solid var(--ow-active);
+}
+
+/* wiki blocks */
+
+.ow-wysiwyg-panel .ow-wysiwyg-control,
+.ow-wysiwyg-alert .quote-alert-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 4px;
+}
+
+.ow-wysiwyg-alert .quote-alert-header {
+  justify-content: flex-start;
+}
+
+.ow-wysiwyg-fold .collapse-header {
+  display: flex;
+  align-items: center;
+}
+
+.ow-wysiwyg-fold .collapse-content {
+  min-height: 2em;
+}
+
+.ow-wysiwyg-fold-summary {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-weight: bold;
+  outline: none;
+}
+
+.ow-wysiwyg-spoiler {
+  position: relative;
+  padding: 0.5em 1em;
+  border-left: 4px dashed var(--ow-border);
+}
+
+.ow-wysiwyg-spoiler::before {
+  content: 'Spoiler';
+  position: absolute;
+  top: 2px;
+  right: 6px;
+  font-size: 0.75em;
+  color: var(--ow-muted);
+}
+
+.ow-wysiwyg-wikilink {
+  color: var(--dm-link-text-color, var(--lm-link-text-color, #1890ff));
+  border-bottom: 1px dashed currentColor;
+  cursor: pointer;
+}
+
+/* verbatim Markdown */
+
+.ow-wysiwyg-raw {
+  margin: 0.5em 0;
+  border: 1px dashed var(--ow-border);
+  border-radius: 3px;
+  background: var(--ow-raw-bg);
+}
+
+.ow-wysiwyg-raw-label {
+  padding: 1px 6px;
+  font-size: 0.7em;
+  color: var(--ow-muted);
+}
+
+.ow-wysiwyg-raw-source {
+  display: block;
+  width: 100%;
+  resize: none;
+  overflow: hidden;
+  padding: 2px 8px 6px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-family: var(--base-font-family-monospace, monospace);
+  font-size: 0.85em;
+  outline: none;
+}
+
+.ow-wysiwyg-raw-inline {
+  background: var(--ow-raw-bg);
+  border: 1px dashed var(--ow-border);
+  cursor: pointer;
+}
+
+/* tabs: Visual | Markdown */
+
+.ow-wysiwyg-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: -1px;
+}
+
+.ow-wysiwyg-tab {
+  padding: 4px 14px;
+  font-size: 0.9em;
+  border: 1px solid var(--ow-border, rgba(0, 0, 0, 0.15));
+  border-bottom: 0;
+  border-radius: 4px 4px 0 0;
+  background: transparent;
+  color: inherit;
+  opacity: 0.65;
+  cursor: pointer;
+}
+
+.ow-wysiwyg-tab.active {
+  opacity: 1;
+  font-weight: bold;
+  background: var(--ow-toolbar-bg, #fff);
+}
+
+.dark-mode .ow-wysiwyg-tab.active {
+  background: #25282c;
+}
+
+.ow-wysiwyg-badge:empty {
+  display: none;
+}
+
+.ow-wysiwyg-badge {
+  display: inline-block;
+  min-width: 1.2em;
+  padding: 0 4px;
+  margin-left: 2px;
+  font-size: 0.75em;
+  border-radius: 8px;
+  color: #fff;
+  background: #888;
+}
+
+.ow-wysiwyg-badge.warning {
+  background: #d39e00;
+}
+
+.ow-wysiwyg-badge.error {
+  background: #dc3545;
+}
+
+/* Markdown check, under the source editor */
+
+.ow-wysiwyg-lint {
+  max-height: 10em;
+  overflow-y: auto;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-bottom: 0;
+  font-size: 0.85em;
+}
+
+.ow-wysiwyg-lint-ok {
+  padding: 4px 10px;
+  opacity: 0.6;
+}
+
+.ow-wysiwyg-lint-item {
+  display: block;
+  width: 100%;
+  padding: 3px 10px;
+  text-align: left;
+  border: 0;
+  border-top: 1px solid rgba(128, 128, 128, 0.15);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.ow-wysiwyg-lint-item:hover {
+  background: rgba(128, 128, 128, 0.1);
+}
+
+.ow-wysiwyg-lint-error i {
+  color: #dc3545;
+}
+
+.ow-wysiwyg-lint-warning i {
+  color: #d39e00;
+}
+
+.ow-wysiwyg-note-error {
+  color: #dc3545;
+}
+
+/* the wiki's theme sets the root font to 10px: sizes here are em of 14px */
+.ow-wysiwyg-toolbar,
+.ow-wysiwyg-note,
+.ow-wysiwyg-tabs,
+.ow-wysiwyg-lint {
+  font-size: 14px;
+}
+
+/* the visual tab: the source editor and its check are hidden. A class on the
+   editor block, not a style on CodeMirror, which rewrites its own attributes. */
+#editor_block.ow-wysiwyg-visual > .cm-editor,
+#editor_block.ow-wysiwyg-visual > .ow-wysiwyg-lint {
+  display: none !important;
+}

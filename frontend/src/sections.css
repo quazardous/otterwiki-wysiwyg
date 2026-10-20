@@ -1,0 +1,25 @@
+/* otterwiki-wysiwyg: section edit links on the headings of a page */
+.ow-wysiwyg-section-edit {
+  margin-left: 0.5rem;
+  font-size: 0.6em;
+  vertical-align: middle;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+h1:hover > .ow-wysiwyg-section-edit,
+h2:hover > .ow-wysiwyg-section-edit,
+h3:hover > .ow-wysiwyg-section-edit,
+h4:hover > .ow-wysiwyg-section-edit,
+h5:hover > .ow-wysiwyg-section-edit,
+h6:hover > .ow-wysiwyg-section-edit,
+.ow-wysiwyg-section-edit:focus {
+  opacity: 0.7;
+}
+
+/* no hover on touch screens: always visible */
+@media (hover: none) {
+  .ow-wysiwyg-section-edit {
+    opacity: 0.5;
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "otterwiki-wysiwyg-frontend",
+  "version": "0.1.0",
+  "description": "Visual editor bundle of otterwiki-wysiwyg",
+  "scripts": {
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch",
+    "test": "node --test test/*.test.js",
+    "e2e": "node --test --test-concurrency=1 e2e/*.e2e.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@tiptap/core": "^3.32.0",
+    "@tiptap/extension-hard-break": "^3.32.0",
+    "@tiptap/extension-highlight": "^3.32.0",
+    "@tiptap/extension-image": "^3.32.0",
+    "@tiptap/extension-list": "^3.32.0",
+    "@tiptap/extension-table": "^3.32.0",
+    "@tiptap/markdown": "^3.32.0",
+    "@tiptap/pm": "^3.32.0",
+    "@tiptap/starter-kit": "^3.32.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "playwright-core": "^1.64.1"
+  },
+  "private": true,
+  "type": "module"
+}

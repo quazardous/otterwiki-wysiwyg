@@ -1,0 +1,34 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "otterwiki-wysiwyg"
+version = "0.1.0"
+description = "Visual (WYSIWYG) editor plugin for An Otter Wiki: pages stay Markdown."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "David Berlioz", email = "berliozdavid@gmail.com" }]
+requires-python = ">=3.10"
+keywords = ["otterwiki", "wiki", "wysiwyg", "markdown", "editor", "plugin"]
+classifiers = [
+    "Framework :: Flask",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Text Editors",
+]
+dependencies = ["otterwiki>=2.26"]
+
+[project.urls]
+Homepage = "https://github.com/quazardous/otterwiki-wysiwyg"
+Issues = "https://github.com/quazardous/otterwiki-wysiwyg/issues"
+
+[project.entry-points.otterwiki]
+wysiwyg = "otterwiki_wysiwyg"
+
+[tool.hatch.build.targets.wheel]
+packages = ["otterwiki_wysiwyg"]
+
+[tool.hatch.build.targets.sdist]
+include = ["otterwiki_wysiwyg", "README.md", "LICENSE", "CHANGELOG.md"]

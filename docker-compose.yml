@@ -1,0 +1,28 @@
+# Local An Otter Wiki with the plugin, for development and manual testing.
+#   make up      build the editor bundle, start the wiki on http://localhost:8080
+#   make seed    add the demo pages (every syntax the plugin handles)
+# The wiki installs every plugin found in /plugins at start (its entrypoint runs
+# `pip install` there), which copies the package into its site-packages.
+# PYTHONPATH puts the mounted sources first, so the wiki runs the plugin from
+# this checkout: a new bundle (`make build`) shows on a reload of the page, a
+# change of the Python side needs `make restart`.
+services:
+  otterwiki:
+    image: redimp/otterwiki:${OTTERWIKI_VERSION:-2.26.0}
+    ports:
+      - "${OTTERWIKI_PORT:-8080}:80"
+    environment:
+      SITE_NAME: "otterwiki-wysiwyg dev"
+      # no login needed while developing
+      READ_ACCESS: ANONYMOUS
+      WRITE_ACCESS: ANONYMOUS
+      ATTACHMENT_ACCESS: ANONYMOUS
+      PYTHONPATH: /plugins/otterwiki_wysiwyg
+      # the section edit links on the headings of a page
+      WYSIWYG_SECTION_EDIT: "true"
+    volumes:
+      - app-data:/app-data
+      - ./:/plugins/otterwiki_wysiwyg:ro
+      - ./dev/seed:/seed:ro
+volumes:
+  app-data:

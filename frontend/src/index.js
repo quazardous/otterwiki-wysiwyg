@@ -484,14 +484,23 @@ function install() {
     sourceTab.classList.add('active')
     if (current === null) toolbar.setTarget(pageTarget2)
   }
+  // On load, the wiki brings back the live preview if it was on last time: not
+  // with the visual tab, which is a preview already.
+  window.addEventListener('load', () => {
+    if (visual.editor && splitBtn && splitBtn.classList.contains('btn-primary')) splitBtn.click()
+  })
+  // shown only now, built (wysiwyg.css hides it until then)
+  block.classList.add('ow-wysiwyg-ready')
   return true
 }
 
-// the wiki creates its editor on load; wait for it
+// The wiki creates its editor on DOMContentLoaded, from a script before this
+// one: listening to the same event, this runs right after it, before the page
+// is shown. Retries cover a slower start.
 function start(tries = 0) {
   if (install()) return
-  if (tries < 50) setTimeout(() => start(tries + 1), 100)
+  if (tries < 60) setTimeout(() => start(tries + 1), 50)
 }
 
-if (document.readyState === 'complete') start()
-else window.addEventListener('load', () => start())
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => start())
+else start()

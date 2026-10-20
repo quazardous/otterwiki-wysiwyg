@@ -516,6 +516,20 @@
 
 /* the section editor is styled in its shadow root (section-theme.js) */
 
+/* The editing area is shown once this plugin has built its tabs and editor:
+   no flash of the wiki's Markdown editor first. Should the script not start,
+   it shows anyway after 3 s, so the page can always be edited. */
+#editor_block:not(.ow-wysiwyg-ready) {
+  visibility: hidden;
+  animation: ow-wysiwyg-reveal 0s linear 3s forwards;
+}
+
+@keyframes ow-wysiwyg-reveal {
+  to {
+    visibility: visible;
+  }
+}
+
 /* the wiki's own toolbar (navbar): replaced by this one. In CSS, loaded in the
    page's head, so it never shows, not even until the script runs. */
 .navbar .btn-editor,

@@ -156,6 +156,9 @@ test('section edit: a pencil per top-level heading opens its section, visual fir
   assert.match(after, /## Quotes and blocks \(edited\)\n/)
   assert.match(after, /## Added section\n\nNew text\.\n\n## Tables/)
 
+  // letters stay in the editor (no wiki shortcut fired), Ctrl+S still saves
+  assert.equal(await page.evaluate(() => document.getElementById('modal-leave').classList.contains('show')), false)
+
   // the new section is in the list (refreshed with the check); the visual tab
   // keeps the section; back to the whole page
   await page.waitForFunction(() => [...document.querySelectorAll('#wysiwyg_subtab_section option')].some((o) => o.textContent.trim() === 'Added section'))

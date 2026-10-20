@@ -36,8 +36,13 @@ export class SectionEditor {
     this.shadow.append(this.mount)
     // Keys typed here stay here: from outside, the shadow root hides the editable
     // element, and the wiki's keyboard shortcuts (c: create page, e: edit...)
-    // would take the letters for themselves.
-    for (const type of ['keydown', 'keypress', 'keyup']) this.dom.addEventListener(type, (e) => e.stopPropagation())
+    // would take the letters for themselves. Ctrl / Cmd combinations go on to
+    // the wiki: Ctrl+S saves, Ctrl+P previews.
+    for (const type of ['keydown', 'keypress', 'keyup']) {
+      this.dom.addEventListener(type, (e) => {
+        if (!e.ctrlKey && !e.metaKey) e.stopPropagation()
+      })
+    }
   }
 
   get pageText() {

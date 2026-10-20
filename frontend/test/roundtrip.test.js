@@ -170,3 +170,22 @@ test('a span with another style, or nested spans, stays HTML', () => {
   const doc = rt.load('A <span style="background: red">x</span> and <span style="color: red">a <span>b</span></span>.\n')
   assert.ok(!JSON.stringify(doc).includes('"owColor"'))
 })
+
+test('a line of non-breaking spaces is a blank line in the editor, kept as it was', () => {
+  const md = 'First.\n\n\u00a0\n\nSecond.\n'
+  const rt = roundtrip()
+  const doc = clone(rt.load(md))
+  assert.deepEqual(doc.content.map((n) => n.type), ['paragraph', 'paragraph', 'paragraph'])
+  assert.ok(!rt.blocks.some((b) => b.fallback))
+  assert.equal(rt.serialize(doc), md)
+  doc.content[2].content[0].text = 'Second, edited.'
+  assert.equal(rt.serialize(doc), 'First.\n\n\u00a0\n\nSecond, edited.\n')
+})
+
+test('double spaces in a table cell do not make it source', () => {
+  const md = '| a | b |\n| --- | --- |\n| two  spaces | x |\n'
+  const rt = roundtrip()
+  rt.load(md)
+  assert.ok(!rt.blocks.some((b) => b.fallback))
+  assert.equal(rt.serialize(rt.load(md)), md)
+})

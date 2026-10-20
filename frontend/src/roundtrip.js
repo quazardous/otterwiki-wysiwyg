@@ -19,6 +19,23 @@ const FRONTMATTER = /^---\n[\s\S]*?\n---(\n|$)/
 
 const fingerprint = (nodes) => JSON.stringify(nodes)
 
+// Runs of spaces in text, as the wiki shows them: one space. Only to tell
+// whether a block can be written back (a table cell loses its double spaces,
+// and a non-breaking space next to a space),
+// never to match blocks. Code keeps its spaces.
+function collapseSpaces(nodes) {
+  return nodes.map(function walk(n) {
+    if (n.type === 'codeBlock') return n
+    const out = { ...n }
+    if (n.type === 'text' && !(n.marks || []).some((m) => m.type === 'code')) out.text = n.text.replace(/[ \u00a0]{2,}/g, ' ')
+    if (n.content) out.content = n.content.map(walk)
+    return out
+  })
+}
+
+// one empty paragraph
+const isSpacer = (nodes) => nodes.length === 1 && nodes[0].type === 'paragraph' && !(nodes[0].content && nodes[0].content.length)
+
 // A newline inside a text node (a soft line break of Markdown) becomes a
 // hardBreak marked soft: the browser would turn it into a hard one anyway.
 // Code keeps its newlines.
@@ -71,9 +88,13 @@ export class RoundTrip {
   }
 
   // a block is safe to edit visually when writing it back reads as the same nodes
-  isFaithful(nodes) {
+  isFaithful(nodes, body = '') {
     if (nodes.length === 0) return false
-    return fingerprint(this.parseNodes(this.serializeNodes(nodes))) === fingerprint(nodes)
+    // A spacer: a line of non-breaking spaces (&nbsp; paragraphs of other
+    // editors), an empty paragraph in the editor. It has no Markdown form of its
+    // own, but untouched it is written back as it was (serialize).
+    if (isSpacer(nodes) && /^[\s\u00a0]*$/.test(body) && body.includes('\u00a0')) return true
+    return fingerprint(collapseSpaces(this.parseNodes(this.serializeNodes(nodes)))) === fingerprint(collapseSpaces(nodes))
   }
 
   /**
@@ -96,7 +117,7 @@ export class RoundTrip {
         const { start, body } = trimNewlines(raw)
         if (body !== '') {
           let nodes = this.parseNodes(body)
-          const fallback = !this.isFaithful(nodes)
+          const fallback = !this.isFaithful(nodes, body)
           if (fallback) nodes = [{ type: 'owRawBlock', attrs: { source: body } }]
           this.addBlock(offset + start, body, nodes, fallback)
         }
@@ -116,8 +137,7 @@ export class RoundTrip {
    * Write the editor document back to Markdown.
    */
   serialize(doc) {
-    // empty paragraphs (Enter pressed twice) have no Markdown form
-    const nodes = this.normalize(doc.content || []).filter((n) => !(n.type === 'paragraph' && !(n.content && n.content.length)))
+    const nodes = this.normalize(doc.content || [])
     const pieces = []
     const used = new Set()
     let next = 0 // the block expected next, to keep blocks in their original order
@@ -129,8 +149,11 @@ export class RoundTrip {
         pieces.push({ text: this.blocks[b].body, block: b })
         i += this.blocks[b].nodes.length
         next = b + 1
+      } else if (isSpacer([nodes[i]])) {
+        // a new empty paragraph (Enter pressed twice) has no Markdown form
+        i += 1
       } else {
-        // an edited or new node: serialized, possibly merged with the next new ones
+        // an edited or new node: serialized
         pieces.push({ text: this.serializeNodes([nodes[i]]), block: null })
         i += 1
       }

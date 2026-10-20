@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.1 — 2026-10-20
+
+- A line of non-breaking spaces (the `&nbsp;` spacers of other editors) is a
+  blank line in the visual editor, no longer a Markdown source box; kept as
+  is on save.
+- Spaces next to each other (double spaces, a space and a non-breaking space)
+  no longer make a block Markdown source.
+- `make check-pages DIR=…`: check the plugin on a whole wiki (counts only).
+
 ## 0.2.0 — 2026-10-20
 
 - Text colour: a palette in the toolbar (both tabs), written as

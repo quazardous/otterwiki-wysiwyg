@@ -1,5 +1,5 @@
 # otterwiki-wysiwyg — make help
-.PHONY: help install build watch test e2e screenshots up down restart logs seed clean
+.PHONY: help install build watch test e2e screenshots check-pages up down restart logs seed clean
 
 COMPOSE ?= docker compose
 
@@ -20,6 +20,9 @@ test: ## run the round-trip tests
 
 e2e: ## run the end-to-end tests against the local wiki (make up && make seed first)
 	cd frontend && npm run e2e
+
+check-pages: ## check the plugin on a wiki's pages, DIR=<its git repository> (counts only, no content)
+	cd frontend && node tools/check-pages.mjs $(abspath $(DIR))
 
 screenshots: ## the README screenshots, docs/*.png (make up && make seed first)
 	cd frontend && npm run screenshots

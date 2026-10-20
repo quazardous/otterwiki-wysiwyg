@@ -131,6 +131,7 @@ make install   # frontend dependencies
 make test      # round-trip tests
 make e2e       # end-to-end tests in Chrome, against the local wiki
 make screenshots  # the README screenshots (docs/)
+make check-pages DIR=<wiki repository>  # every page written back unchanged? (counts only)
 make up        # build the bundle, start a wiki on http://localhost:8080 (no login)
 make seed      # add demo pages with every syntax
 make watch     # rebuild the bundle on change, then reload the page

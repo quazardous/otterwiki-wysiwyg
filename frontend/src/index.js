@@ -134,7 +134,7 @@ class VisualEditor {
     banner.className = 'ow-wysiwyg-note ow-wysiwyg-section'
     const whole = document.createElement('button')
     whole.type = 'button'
-    whole.className = 'btn btn-xs ml-10'
+    whole.className = 'ow-wysiwyg-link-btn'
     whole.textContent = 'Edit the whole page'
     whole.addEventListener('click', () => {
       this.section = null

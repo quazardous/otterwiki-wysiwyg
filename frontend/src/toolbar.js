@@ -125,7 +125,7 @@ export function buildToolbar(editor) {
     }
     const btn = document.createElement('button')
     btn.type = 'button'
-    btn.className = 'btn btn-xs ow-wysiwyg-btn'
+    btn.className = 'ow-wysiwyg-btn'
     btn.title = title
     btn.innerHTML = `<i class="${icon}"></i>`
     // keep the editor's selection: act on mousedown, not after a focus change

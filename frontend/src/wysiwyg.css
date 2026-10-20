@@ -3,20 +3,28 @@
    it will once saved. */
 
 .ow-wysiwyg {
-  --ow-border: rgba(0, 0, 0, 0.15);
+  --ow-border: rgba(0, 0, 0, 0.12);
   --ow-muted: rgba(0, 0, 0, 0.55);
   --ow-raw-bg: rgba(0, 0, 0, 0.04);
   --ow-toolbar-bg: #fff;
-  --ow-active: rgba(0, 0, 0, 0.1);
+  --ow-hover: rgba(0, 0, 0, 0.06);
+  --ow-active: rgba(24, 144, 255, 0.14);
+  --ow-accent: #1890ff;
+  --ow-icon: rgba(0, 0, 0, 0.7);
 }
 
 .dark-mode .ow-wysiwyg {
-  --ow-border: rgba(255, 255, 255, 0.2);
+  --ow-border: rgba(255, 255, 255, 0.14);
   --ow-muted: rgba(255, 255, 255, 0.6);
   --ow-raw-bg: rgba(255, 255, 255, 0.06);
   --ow-toolbar-bg: #25282c;
-  --ow-active: rgba(255, 255, 255, 0.15);
+  --ow-hover: rgba(255, 255, 255, 0.08);
+  --ow-active: rgba(24, 144, 255, 0.25);
+  --ow-accent: #5ab0ff;
+  --ow-icon: rgba(255, 255, 255, 0.8);
 }
+
+/* toolbar: flat icon buttons, Material-like */
 
 .ow-wysiwyg-toolbar {
   position: sticky;
@@ -25,52 +33,120 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 2px;
-  padding: 4px 6px;
+  gap: 0 1px;
+  padding: 4px 8px;
   background: var(--ow-toolbar-bg);
-  border: 1px solid var(--ow-border);
-  border-radius: 4px 4px 0 0;
+  border-bottom: 1px solid var(--ow-border);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .ow-wysiwyg-btn {
-  min-width: 2em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ow-icon);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.12s, color 0.12s;
+}
+
+.ow-wysiwyg-btn:hover {
+  background: var(--ow-hover);
+}
+
+.ow-wysiwyg-btn:focus-visible {
+  outline: 2px solid var(--ow-accent);
+  outline-offset: -2px;
 }
 
 .ow-wysiwyg-btn.active {
   background: var(--ow-active);
+  color: var(--ow-accent);
 }
 
 .ow-wysiwyg-sep {
   width: 1px;
-  height: 1.4em;
-  margin: 0 4px;
+  height: 20px;
+  margin: 0 6px;
   background: var(--ow-border);
 }
 
 .ow-wysiwyg-select {
-  height: 1.9em;
-  padding: 0 4px;
-  font-size: 0.85em;
-  border: 1px solid var(--ow-border);
-  border-radius: 3px;
+  height: 32px;
+  padding: 0 6px;
+  font-size: 13px;
+  border: 0;
+  border-radius: 6px;
   background: transparent;
   color: inherit;
+  cursor: pointer;
+}
+
+.ow-wysiwyg-select:hover {
+  background: var(--ow-hover);
+}
+
+.ow-wysiwyg-select:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.ow-wysiwyg-select:disabled:hover {
+  background: transparent;
+}
+
+/* the colour / alert type menus inside blocks: a discreet chip */
+.ow-wysiwyg-control .ow-wysiwyg-select {
+  height: 24px;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.dark-mode .ow-wysiwyg-control .ow-wysiwyg-select {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.ow-wysiwyg-link-btn {
+  margin-left: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ow-accent);
+  font-size: inherit;
+  cursor: pointer;
+}
+
+.ow-wysiwyg-link-btn:hover {
+  text-decoration: underline;
 }
 
 .ow-wysiwyg-note {
-  padding: 4px 10px;
-  font-size: 0.85em;
+  padding: 6px 12px;
+  font-size: 13px;
   color: var(--ow-muted);
+  border-bottom: 1px solid var(--ow-border);
+}
+
+/* one card around the toolbar and the page */
+.ow-wysiwyg {
   border: 1px solid var(--ow-border);
-  border-top: 0;
+  border-radius: 8px;
+  background: var(--ow-toolbar-bg);
+}
+
+.ow-wysiwyg-toolbar {
+  border-radius: 8px 8px 0 0;
 }
 
 .ow-wysiwyg-surface {
   min-height: 60vh;
   padding: 1em 1.5em;
-  border: 1px solid var(--ow-border);
-  border-top: 0;
-  border-radius: 0 0 4px 4px;
 }
 
 .ow-wysiwyg-content {
@@ -206,34 +282,47 @@
   cursor: pointer;
 }
 
-/* tabs: Visual | Markdown */
+/* tabs: Visual | Markdown, underlined like Material tabs */
 
 .ow-wysiwyg-tabs {
   display: flex;
-  gap: 2px;
-  margin-bottom: -1px;
+  gap: 4px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.2);
 }
 
 .ow-wysiwyg-tab {
-  padding: 4px 14px;
-  font-size: 0.9em;
-  border: 1px solid var(--ow-border, rgba(0, 0, 0, 0.15));
-  border-bottom: 0;
-  border-radius: 4px 4px 0 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 14px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  border-radius: 6px 6px 0 0;
   background: transparent;
   color: inherit;
-  opacity: 0.65;
+  opacity: 0.6;
   cursor: pointer;
+  transition: background-color 0.12s, opacity 0.12s;
+}
+
+.ow-wysiwyg-tab:hover {
+  opacity: 0.9;
+  background: rgba(128, 128, 128, 0.08);
 }
 
 .ow-wysiwyg-tab.active {
   opacity: 1;
-  font-weight: bold;
-  background: var(--ow-toolbar-bg, #fff);
+  font-weight: 500;
+  border-bottom-color: #1890ff;
+  color: #1890ff;
 }
 
 .dark-mode .ow-wysiwyg-tab.active {
-  background: #25282c;
+  border-bottom-color: #5ab0ff;
+  color: #5ab0ff;
 }
 
 .ow-wysiwyg-badge:empty {
@@ -264,23 +353,23 @@
 .ow-wysiwyg-lint {
   max-height: 10em;
   overflow-y: auto;
-  border: 1px solid rgba(128, 128, 128, 0.3);
-  border-bottom: 0;
+  margin-bottom: 6px;
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  border-radius: 8px;
   font-size: 0.85em;
 }
 
 .ow-wysiwyg-lint-ok {
-  padding: 4px 10px;
+  padding: 5px 12px;
   opacity: 0.6;
 }
 
 .ow-wysiwyg-lint-item {
   display: block;
   width: 100%;
-  padding: 3px 10px;
+  padding: 5px 12px;
   text-align: left;
   border: 0;
-  border-top: 1px solid rgba(128, 128, 128, 0.15);
   background: transparent;
   color: inherit;
   cursor: pointer;

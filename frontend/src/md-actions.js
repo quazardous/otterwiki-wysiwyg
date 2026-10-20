@@ -128,3 +128,21 @@ export function applyAction(view, action, arg) {
   view.dispatch({ changes: { from: r.from, to: r.to, insert: r.insert }, selection: { anchor: r.select[0], head: r.select[1] }, scrollIntoView: true })
   view.focus()
 }
+
+// <span style="color: …">: colour the selection, or (color null) take the colour off
+const SPAN_OPEN = /<span style="\s*color:[^"]*">$/i
+export function color(sel, c) {
+  const { text, from, to } = sel
+  const before = text.slice(0, from).match(SPAN_OPEN)
+  const closes = text.slice(to, to + 7) === '</span>'
+  if (before && closes) {
+    // already coloured: change the colour, or take it off
+    const start = from - before[0].length
+    const inner = text.slice(from, to)
+    const insert = c ? `<span style="color: ${c}">${inner}</span>` : inner
+    const at = c ? start + `<span style="color: ${c}">`.length : start
+    return { from: start, to: to + 7, insert, select: [at, at + inner.length] }
+  }
+  if (!c) return { from, to, insert: text.slice(from, to), select: [from, to] }
+  return wrap(sel, `<span style="color: ${c}">`, '</span>')
+}

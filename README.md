@@ -18,6 +18,8 @@ Markdown editor. Both edit the same page, and you can switch at any time.
   (`> [!NOTE]`), folded blocks (`>|`), spoilers (`>!`), `==mark==`,
   `[[WikiLinks]]`, tables, checklists, code blocks, images are edited visually,
   and written back in the wiki's syntax.
+- **Text colour.** A palette in the toolbar; written as
+  `<span style="color: …">text</span>`, the coloured text the wiki shows.
 - **Nothing is lost.** Syntax without a visual form (math, embeddings like
   `{{TOC}}`, footnotes, abbreviations, raw HTML…) and any block the editor
   could not write back exactly are kept as grey *Markdown* boxes, editable as
@@ -80,7 +82,7 @@ remembers the tab you used last.
 The toolbar is the same in both tabs, above the editing area. In the visual tab
 it formats the page; in the Markdown tab the same buttons write the Markdown
 (`**bold**`, `## heading`, `- list`, `::: info`, `> [!NOTE]`, `>|` folded block,
-`[[link]]`, a table...), and the wiki's search, replace and table tools are
+`[[link]]`, a coloured `<span>`, a table...), and the wiki's search, replace and table tools are
 there too.
 
 ## Options

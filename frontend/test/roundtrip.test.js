@@ -154,3 +154,19 @@ test('replacing a section source keeps the rest of the page byte for byte', () =
   rt.load(out)
   assert.deepEqual(rt.sections().map((x) => x.title), ['Page', 'One', 'Added section', 'Two'])
 })
+
+test('coloured text is edited visually, untouched blocks keep their spelling', () => {
+  const md = 'A <span style="color:green">**green**</span> word.\n\nAnother <span style="color: #e03131">red</span>.\n'
+  const rt = roundtrip()
+  const doc = clone(rt.load(md))
+  assert.ok(JSON.stringify(doc).includes('"owColor"'))
+  assert.equal(rt.serialize(doc), md)
+  doc.content[1].content.push({ type: 'text', text: ' Edited.' })
+  assert.equal(rt.serialize(doc), 'A <span style="color:green">**green**</span> word.\n\nAnother <span style="color: #e03131">red</span>. Edited.\n')
+})
+
+test('a span with another style, or nested spans, stays HTML', () => {
+  const rt = roundtrip()
+  const doc = rt.load('A <span style="background: red">x</span> and <span style="color: red">a <span>b</span></span>.\n')
+  assert.ok(!JSON.stringify(doc).includes('"owColor"'))
+})

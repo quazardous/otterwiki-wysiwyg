@@ -1,6 +1,6 @@
 {
   "name": "otterwiki-wysiwyg-frontend",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Visual editor bundle of otterwiki-wysiwyg",
   "scripts": {
     "build": "node build.mjs",

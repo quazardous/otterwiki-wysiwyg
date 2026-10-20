@@ -218,6 +218,31 @@ test('one toolbar, above the editing area, in both tabs; the wiki\'s own is hidd
   assert.equal(await place(), mdTop, 'same place in both tabs')
 })
 
+test('text colour: the palette writes a coloured span, the wiki shows it in colour', async () => {
+  await openEditor('E2e-demo')
+  // select "bold" in the first paragraph
+  await page.dblclick('.ow-wysiwyg-content p strong')
+  await page.click('button[title="Text colour"]')
+  await page.click('.ow-wysiwyg-menu-list.open .ow-wysiwyg-menu-item:has-text("Red")')
+  const md = await cmText()
+  assert.match(md, /<span style="color: #e03131">\*\*bold\*\*<\/span>|\*\*<span style="color: #e03131">bold<\/span>\*\*/)
+  await save('e2e: colour')
+  const html = await (await fetch(`${WIKI}/E2e-demo`)).text()
+  assert.match(html, /<span style="color: #e03131">/)
+  // the Markdown tab: the same button takes the colour off
+  await openEditor('E2e-demo', 'source')
+  await page.evaluate(() => {
+    const cm = window.cm_editor
+    const text = cm.state.doc.toString()
+    const at = text.indexOf('bold</span>') === -1 ? text.indexOf('**bold**</span>') : text.indexOf('bold</span>')
+    const len = text.indexOf('bold</span>') === -1 ? 8 : 4
+    cm.dispatch({ selection: { anchor: at, head: at + len } })
+  })
+  await page.click('button[title="Text colour"]')
+  await page.click('.ow-wysiwyg-menu-list.open .ow-wysiwyg-menu-item:has-text("No colour")')
+  assert.doesNotMatch(await cmText(), /<span style="color/)
+})
+
 test('no JavaScript error', () => {
   assert.deepEqual(errors, [])
 })

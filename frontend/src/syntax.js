@@ -8,6 +8,7 @@
 //   >! spoiler block                                          -> owSpoiler
 //   > [!NOTE] alerts (NOTE, TIP, IMPORTANT, WARNING, CAUTION) -> owAlert
 //   [[Text|Page]] wiki links                                  -> owWikiLink
+//   <span style="color: …">text</span> coloured text           -> owColor
 //
 // Syntax the editor does not edit visually (math, embeddings, footnotes,
 // abbreviations, raw HTML, ...) is kept verbatim in owRawBlock / owRawInline,
@@ -15,7 +16,7 @@
 //
 // The grammars mirror otterwiki/renderer_plugins.py (An Otter Wiki 2.26).
 
-import { Extension, Node, mergeAttributes } from '@tiptap/core'
+import { Extension, Mark, Node, mergeAttributes } from '@tiptap/core'
 
 const lines = (src) => src.split('\n')
 
@@ -339,6 +340,57 @@ export const OwWikiLink = Node.create({
   },
 })
 
+// ---------------------------------------------------------------- text colour
+
+// The only coloured text the wiki shows: a span with a colour style (its HTML
+// cleaner keeps the style attribute of a span). One colour, no other style.
+const COLOR_SPAN = /^<span style="\s*color:\s*([#\w(),.%\s-]+?)\s*;?\s*">([\s\S]*?)<\/span>/i
+
+// a colour as written in the page, kept as is; nothing that could leave the style
+export const safeColor = (c) => (/^[#\w(),.%\s-]+$/.test(c || '') ? c.trim() : null)
+
+export const OwColor = Mark.create({
+  name: 'owColor',
+  // before raw HTML (OwHtml), which would keep the span as source
+  priority: 300,
+
+  addAttributes() {
+    return { color: { default: null } }
+  },
+
+  parseHTML() {
+    return [{ tag: 'span[data-ow-color]', getAttrs: (el) => ({ color: safeColor(el.getAttribute('data-ow-color')) }) }]
+  },
+
+  renderHTML({ mark, HTMLAttributes }) {
+    const color = safeColor(mark.attrs.color)
+    return ['span', mergeAttributes(HTMLAttributes, { 'data-ow-color': color, style: color ? `color: ${color}` : null }), 0]
+  },
+
+  markdownTokenizer: {
+    name: 'owColor',
+    level: 'inline',
+    start: (src) => {
+      const m = src.match(/<span style="\s*color:/i)
+      return m ? m.index : -1
+    },
+    tokenize(src, _tokens, lexer) {
+      const m = src.match(COLOR_SPAN)
+      // a span inside the coloured text: not ours, it stays HTML
+      if (!m || /<span\b/i.test(m[2]) || !safeColor(m[1])) return
+      return { type: 'owColor', raw: m[0], color: m[1].trim(), tokens: lexer.inlineTokens(m[2]) }
+    },
+  },
+
+  parseMarkdown(token, h) {
+    return h.applyMark('owColor', h.parseInline(token.tokens || []), { color: token.color })
+  },
+
+  renderMarkdown(node, h) {
+    return `<span style="color: ${safeColor(node.attrs?.color) || 'inherit'}">${h.renderChildren(node)}</span>`
+  },
+})
+
 // ----------------------------------------------------- verbatim (source) nodes
 
 // Block-level syntax that is kept as Markdown source: display math, embeddings,
@@ -458,4 +510,4 @@ export const OwHtml = Extension.create({
   },
 })
 
-export const otterwikiSyntax = [OwHtml, OwRawBlock, OwRawInline, OwAlert, OwPanel, OwFold, OwSpoiler, OwWikiLink]
+export const otterwikiSyntax = [OwHtml, OwColor, OwRawBlock, OwRawInline, OwAlert, OwPanel, OwFold, OwSpoiler, OwWikiLink]

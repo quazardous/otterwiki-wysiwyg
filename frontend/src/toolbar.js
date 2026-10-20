@@ -8,6 +8,16 @@
 
 import * as md from './md-actions.js'
 
+// text colours: readable on the wiki's light and dark themes
+export const COLORS = [
+  ['Red', '#e03131'],
+  ['Orange', '#e8590c'],
+  ['Green', '#2f9e44'],
+  ['Blue', '#1971c2'],
+  ['Purple', '#9c36b5'],
+  ['Grey', '#868e96'],
+]
+
 const para = () => ({ type: 'paragraph', content: [] })
 const visualBlock = (type, attrs) => (t) => t.editor.chain().focus().insertContent({ type, attrs, content: [para()] }).run()
 const mdDo = (action, arg) => (t) => md.applyAction(t.view, action, arg)
@@ -55,6 +65,7 @@ const BUTTONS = [
   ['fa fa-italic', 'Italic', { visual: (t) => t.editor.chain().focus().toggleItalic().run(), markdown: (t) => md.applyAction(t.view, (s) => md.wrap(s, '*')) }, (e) => e.isActive('italic')],
   ['fa fa-strikethrough', 'Strikethrough', { visual: (t) => t.editor.chain().focus().toggleStrike().run(), markdown: (t) => md.applyAction(t.view, (s) => md.wrap(s, '~~')) }, (e) => e.isActive('strike')],
   ['fas fa-highlighter', 'Mark', { visual: (t) => t.editor.chain().focus().toggleHighlight().run(), markdown: (t) => md.applyAction(t.view, (s) => md.wrap(s, '==')) }, (e) => e.isActive('highlight')],
+  ['color', 'Text colour'],
   ['fas fa-code', 'Inline code', { visual: (t) => t.editor.chain().focus().toggleCode().run(), markdown: (t) => md.applyAction(t.view, (s) => md.wrap(s, '`', '`', 'code')) }, (e) => e.isActive('code')],
   '|',
   ['heading', 'Paragraph style'],
@@ -171,7 +182,11 @@ export function buildToolbar() {
       continue
     }
     if (icon === 'table') {
-      bar.append(tableMenu(() => target, updaters))
+      bar.append(menuButton('<i class="fas fa-table"></i>', 'Table', TABLE_MENU, () => target, updaters))
+      continue
+    }
+    if (icon === 'color') {
+      bar.append(colorMenu(() => target, updaters))
       continue
     }
     const btn = iconButton(icon, title)
@@ -207,17 +222,46 @@ export function buildToolbar() {
   }
 }
 
-// the Table button: a small menu of table commands
-function tableMenu(getTarget, updaters) {
+// the text colour button: a palette, the current colour under the letter
+const COLOR_MENU = [
+  ...COLORS.map(([name, c]) => [`swatch:${c}`, name, {
+    visual: (t) => t.editor.chain().focus().setMark('owColor', { color: c }).run(),
+    markdown: (t) => md.applyAction(t.view, md.color, c),
+  }]),
+  '-',
+  ['fas fa-ban', 'No colour', {
+    visual: (t) => t.editor.chain().focus().unsetMark('owColor').run(),
+    markdown: (t) => md.applyAction(t.view, md.color, null),
+  }],
+]
+
+function colorMenu(getTarget, updaters) {
+  const menu = menuButton('<span class="ow-wysiwyg-color-a">A</span>', 'Text colour', COLOR_MENU, getTarget, updaters, { always: true })
+  const bar = document.createElement('span')
+  bar.className = 'ow-wysiwyg-color-bar'
+  menu.querySelector('.ow-wysiwyg-color-a').append(bar)
+  updaters.push(() => {
+    const t = getTarget()
+    const c = t.mode === 'visual' && t.editor.isActive('owColor') ? t.editor.getAttributes('owColor').color : null
+    bar.style.background = c || 'currentColor'
+    bar.style.opacity = c ? '1' : '0.25'
+  })
+  return menu
+}
+
+// a toolbar button opening a small menu of entries [icon, label, handlers]
+// icon 'swatch:<colour>' draws a colour swatch; options.always: entries are
+// never disabled (the table ones are, outside a table)
+function menuButton(iconHtml, title, entries, getTarget, updaters, options = {}) {
   const wrap = document.createElement('span')
   wrap.className = 'ow-wysiwyg-menu'
-  const btn = iconButton('fas fa-table', 'Table')
-  btn.innerHTML = '<i class="fas fa-table"></i><i class="fas fa-caret-down ow-wysiwyg-caret"></i>'
+  const btn = iconButton('', title)
+  btn.innerHTML = `${iconHtml}<i class="fas fa-caret-down ow-wysiwyg-caret"></i>`
   btn.classList.add('ow-wysiwyg-btn-menu')
   const list = document.createElement('div')
   list.className = 'ow-wysiwyg-menu-list'
   const items = []
-  for (const entry of TABLE_MENU) {
+  for (const entry of entries) {
     if (entry === '-') {
       const hr = Object.assign(document.createElement('div'), { className: 'ow-wysiwyg-menu-sep' })
       list.append(hr)
@@ -228,8 +272,15 @@ function tableMenu(getTarget, updaters) {
     const item = document.createElement('button')
     item.type = 'button'
     item.className = 'ow-wysiwyg-menu-item'
-    item.innerHTML = `<i class="${icon}"></i> `
-    item.append(label)
+    if (icon.startsWith('swatch:')) {
+      const sw = document.createElement('span')
+      sw.className = 'ow-wysiwyg-swatch'
+      sw.style.background = icon.slice(7)
+      item.append(sw)
+    } else {
+      item.innerHTML = `<i class="${icon}"></i>`
+    }
+    item.append(` ${label}`)
     item.addEventListener('mousedown', (ev) => ev.preventDefault())
     item.addEventListener('click', () => {
       close()
@@ -252,16 +303,15 @@ function tableMenu(getTarget, updaters) {
   })
   updaters.push(() => {
     const t = getTarget()
-    const inTable = t.mode === 'visual' ? t.editor.isActive('table') : true
+    const inTable = options.always || (t.mode === 'visual' ? t.editor.isActive('table') : true)
     let shown = 0
     for (const it of items) {
       if (it.hr) continue
       const h = handlerOf(it.handlers, t)
       it.item.style.display = h ? '' : 'none'
-      it.item.disabled = !it.insert && !inTable
+      it.item.disabled = !options.always && !it.insert && !inTable
       if (h) shown++
     }
-    // the separator only between the insert entry and the others
     for (const it of items) if (it.hr) it.hr.style.display = shown > 1 ? '' : 'none'
   })
   wrap.append(btn, list)

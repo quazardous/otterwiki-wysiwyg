@@ -611,3 +611,30 @@
   margin: 4px 0;
   background: var(--ow-border, rgba(0, 0, 0, 0.12));
 }
+
+/* text colour button and palette */
+.ow-wysiwyg-color-a {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  font-weight: bold;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.ow-wysiwyg-color-bar {
+  display: block;
+  width: 14px;
+  height: 3px;
+  margin-top: 2px;
+  border-radius: 1px;
+}
+
+.ow-wysiwyg-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+}

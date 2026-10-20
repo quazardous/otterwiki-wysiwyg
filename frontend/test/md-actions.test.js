@@ -56,3 +56,9 @@ test('a table template is inserted after the paragraph', () => {
   const out = run('Text.|', md.table)
   assert.match(out, /^Text\.\n\n\| Column 1 \| Column 2 \| Column 3 \|\n\| -+ \| -+ \| -+ \|\n\|/)
 })
+
+test('text colour: a span around the selection, changed or taken off', () => {
+  assert.equal(run('a |word| b', md.color, '#e03131'), 'a <span style="color: #e03131">word</span> b')
+  assert.equal(run('a <span style="color: #e03131">|word|</span> b', md.color, '#2f9e44'), 'a <span style="color: #2f9e44">word</span> b')
+  assert.equal(run('a <span style="color: #e03131">|word|</span> b', md.color, null), 'a word b')
+})

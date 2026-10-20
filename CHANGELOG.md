@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0 — 2026-10-20
+
+- Text colour: a palette in the toolbar (both tabs), written as
+  `<span style="color: …">`, which the wiki shows in colour. Coloured spans
+  already in a page are edited visually.
+
 ## 0.1.0 — 2026-10-20
 
 - Visual and Markdown tabs in the page editor.

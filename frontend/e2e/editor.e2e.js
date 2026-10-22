@@ -88,6 +88,20 @@ test('a new coloured block is written in the wiki syntax', async () => {
   assert.match(await cmText(), /\n::: info\nNew block text\n:::\n/)
 })
 
+test('the controls of a block change it: style, alert type, fold summary', async () => {
+  await openEditor('E2e-demo')
+  await page.selectOption('.ow-wysiwyg-panel select', 'danger')
+  await page.selectOption('.ow-wysiwyg-alert select', 'TIP')
+  await page.fill('.ow-wysiwyg-fold-summary', 'A new summary')
+  assert.match(await page.getAttribute('.ow-wysiwyg-panel', 'class'), /alert-danger/)
+  assert.match(await page.getAttribute('.ow-wysiwyg-alert', 'class'), /quote-alert-tip/)
+  const md = await cmText()
+  assert.match(md, /\n::: danger\n/)
+  assert.match(md, /\n> \[!TIP\]\n/)
+  assert.match(md, /A new summary/)
+  assert.deepEqual(errors, [])
+})
+
 test('switching to the source and back keeps the text', async () => {
   await openEditor('E2e-demo')
   const before = await cmText()

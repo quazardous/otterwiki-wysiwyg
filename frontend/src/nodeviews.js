@@ -26,7 +26,7 @@ function select(options, value, onChange, title) {
 // events inside these controls belong to them, not to the editor
 const isControl = (event) => event.target.closest && event.target.closest('.ow-wysiwyg-control')
 
-export const nodeViews = {
+const views = {
   owPanel: () => ({ node, updateAttributes }) => {
     const contentDOM = el('div', { class: 'ow-wysiwyg-panel-body' })
     // a family the menu does not list (blue, red...) is kept, and listed
@@ -150,3 +150,20 @@ export const nodeViews = {
     }
   },
 }
+
+// Tiptap hands updateAttributes to mark views only, not to node views: without it every control
+// above threw on use (block style, alert type, fold summary, sources, wiki links). Built here from
+// the node's position, on the node as it is now in the document.
+function withUpdate(view) {
+  return (props) => view({
+    ...props,
+    updateAttributes: (attrs) => {
+      const pos = props.getPos()
+      const { state, view: pm } = props.editor
+      const current = typeof pos === 'number' ? state.doc.nodeAt(pos) : null
+      if (current) pm.dispatch(state.tr.setNodeMarkup(pos, undefined, { ...current.attrs, ...attrs }))
+    },
+  })
+}
+
+export const nodeViews = Object.fromEntries(Object.entries(views).map(([name, make]) => [name, () => withUpdate(make())]))

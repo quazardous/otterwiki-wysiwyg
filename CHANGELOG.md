@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.2 — 2026-10-22
+
+- The controls of the wiki blocks work again: the style of a coloured block, the
+  type of an alert, the summary of a folded block, the Markdown source boxes and
+  the wiki links. Tiptap gives node views no `updateAttributes` (mark views
+  only), so each control threw on use and changed nothing; the plugin now builds
+  it from the node's position.
+
 ## 0.2.1 — 2026-10-20
 
 - A line of non-breaking spaces (the `&nbsp;` spacers of other editors) is a
